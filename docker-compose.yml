@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+
+# https://github.com/WeeJeWel/wg-easy/blob/master/README.md
+
+  wg-easy:
+    container_name: wg-easy
+    image: weejewel/wg-easy:latest
+    networks:
+      vpn_net:
+        ipv4_address: 172.28.0.3
+    environment:
+      # Required:
+      # Change this to your host's public address
+       - WG_HOST=0.0.0.0 # 🚨
+       # Optional:
+       - PASSWORD=Set your password for the WebUI # 🚨
+      # - WG_PORT=51820
+      # - WG_DEFAULT_ADDRESS=10.8.0.x
+       - WG_DEFAULT_DNS=172.28.0.2
+      # - WG_MTU=1420
+      # - WG_ALLOWED_IPS=192.168.15.0/24, 10.0.1.0/24
+    volumes:
+      - './etc-wireguard:/etc/wireguard'
+    ports:
+      - "51820:51820/udp"
+      - "51821:51821/tcp"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+
+# https://github.com/pi-hole/docker-pi-hole/blob/master/README.md
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    hostname: pi.hole
+    networks:
+      vpn_net:
+        ipv4_address: 172.28.0.2
+    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+    environment:
+      TZ: 'Europe/Paris'
+      WEBPASSWORD: 'Set your password for the WebUI' # 🚨
+      #VIRTUAL_HOST: 'pi.hole'
+      PIHOLE_DNS_: '1.1.1.1;1.0.0.1'
+      DNSMASQ_LISTENING: 'local'
+    # Volumes store your data between container upgrades
+    volumes:
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped # Recommended but not required (DHCP needs NET_ADMIN)
+
+networks:
+  vpn_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
