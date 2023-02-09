@@ -27,7 +27,7 @@
 ## Configuring the firewall
 
 - Install git with `sudo apt-get install git`
-- Clone this repository with `git clone https://github.com/Oliems/wg-pihole-docker.git`
+- Clone this repository with `git clone https://github.com/foobarberis/wg-pihole-docker.git`
 - Read, make changes if needed and then run the firewall script with `sudo bash firewall-config.sh`. Note that this script will erase all `iptables` rules and chains and replace them. If you run this script after the installation of Docker, you will need to run `service docker restart` in order to re-install the rules and chains Docker needs in order to run properly.
 - By default, `iptables` rules are reset after a reboot. In order to restore them automatically you will need to install the package `iptables-persistent` with `sudo apt-get install iptables-persistent`. The installer will ask you if you want to save your current IPv4 and IPv6 rules, select `Yes` for both. If you were to make changes to the rules and want to save them again, use `sudo iptables-save > /etc/iptables/rules.v4` and/or or `sudo ip6tables-save > /etc/iptables/rules.v6`. You can also use `sudo netfilter-persistent save` to save both files at once and `sudo netfilter-persistent reload` to restore back to how they were last time you saved them.
 
